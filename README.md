@@ -7,6 +7,8 @@
 
 This repository is the official code of paper "Deep Self-Supervised Representation Learning for Free-Hand Sketch"
 
+<div align=center><img src="https://github.com/zzz1515151/self-supervised_learning_sketch/blob/master/img/pipeline.pdf"/></div>
+
 ## Requirements
 Ubuntu 16.04
 
