@@ -42,7 +42,7 @@ chmod +x download.sh
 ```
 
 ## Training Rotation CNN
-We follow ["UNSUPERVISED REPRESENTATION LEARNING BY PREDICTING IMAGE ROTATIONS"] (https://arxiv.org/pdf/1803.07728.pdf) to build RotNet. 
+We follow ["UNSUPERVISED REPRESENTATION LEARNING BY PREDICTING IMAGE ROTATIONS"](https://arxiv.org/pdf/1803.07728.pdf) to build RotNet. 
 ```
 # 1. Enter config folder.
 cd config 
@@ -96,8 +96,6 @@ python train_tcn.py
 ```
 
 ## Training Deformation TCN 
-We build our TCN network based on following settings:
-
 ```
 # 1. Enter config folder.
 cd config 
