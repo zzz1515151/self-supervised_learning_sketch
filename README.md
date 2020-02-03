@@ -83,6 +83,9 @@ python train_cnn.py
 ## Training Rotation TCN 
 We build our TCN network based on following settings:
 
+<div align=center><img src="https://github.com/zzz1515151/self-supervised_learning_sketch/blob/master/img/TCN.png"/></div>
+
+
 ```
 # 1. Enter config folder.
 cd config 
