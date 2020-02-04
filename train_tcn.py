@@ -1,5 +1,6 @@
 from __future__ import print_function
 import sys
+sys.path.append("../")
 import argparse
 import os
 import torch 
@@ -13,22 +14,19 @@ from torch import nn, optim
 from torch.nn.utils import clip_grad_norm_
 from utils.AverageMeter import AverageMeter
 from utils.logger import logger 
-from AlexNet import AlexNet
-from dataloader.dataloader_image import SketchDataset, DataLoader
 
-parser = argparse.ArgumentParser(description='training CNN')
+from TCN import TCN
+from dataloader.dataloader_stroke import RNNDataset, DataLoader
+
+parser = argparse.ArgumentParser(description='traning TCN')
 parser.add_argument("--exp", type = str, default = "", help = "experiment")
 parser.add_argument("--num_workers", type = int, default = 4, help = "num_workers")
 parser.add_argument("--checkpoint", type = int, default = 0, help = "load checkpoint")
 parser.add_argument('--gpu', type = str, default = "0", help = 'choose GPU')
 args = parser.parse_args()
 
-torch.manual_seed(0)
-torch.cuda.manual_seed_all(0)
-np.random.seed(0)
-
 exp_config = os.path.join(".", "config", args.exp + ".py")
-exp_dir = os.path.join("./exp", args.exp)
+exp_dir = os.path.join("./exp", "experiments", args.exp)
 exp_log_dir = os.path.join(exp_dir, "log")
 if not os.path.exists(exp_log_dir):
     os.makedirs(exp_log_dir)
@@ -48,43 +46,34 @@ logger = logger(logger_path).get_logger()
 
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
-# init dataloader 
-signal_type = config['signal_type']
+torch.manual_seed(0)
+torch.cuda.manual_seed_all(0)
+np.random.seed(0)
 
 data_train_opt = config['data_train_opt']
 data_test_opt = config['data_test_opt']
 
-logger.info("Initing dataloader...")
-dataset_train=SketchDataset( 
-    root = data_train_opt['root'],   
-    split = data_train_opt['split'],    
-    resize = data_train_opt['resize'])
+# init dataloader 
+signal_type = config['signal_type']
 
-dataset_test=SketchDataset(   
-    root =  data_test_opt['root'],
-    split = data_test_opt['split'],
-    resize = data_test_opt['resize'])
+logger.info("initing dataloader")
+#加载数据
+train_dataset = RNNDataset(root = data_train_opt["root"], split = data_train_opt["split"])
+trainloader = DataLoader(dataset = train_dataset, 
+                signal_type = signal_type,
+                batch_size = data_train_opt["batch_size"], \
+                num_workers = args.num_workers, shuffle = True)
 
-dloader_train = DataLoader(
-    dataset=dataset_train,
-    signal_type = signal_type,
-    batch_size=data_train_opt['batch_size'],
-    unsupervised=data_train_opt['unsupervised'],
-    epoch_size=data_train_opt['epoch_size'],
-    num_workers=args.num_workers,
-    shuffle=True)
-
-dloader_test = DataLoader(
-    dataset=dataset_test,
-    signal_type = signal_type,
-    batch_size=data_test_opt['batch_size'],
-    unsupervised=data_test_opt['unsupervised'],
-    epoch_size=data_test_opt['epoch_size'],
-    num_workers=args.num_workers,
-    shuffle=False)
+test_dataset = RNNDataset(root = data_test_opt["root"], split = data_test_opt["split"])
+testloader = DataLoader(dataset = test_dataset, 
+                signal_type = signal_type,
+                batch_size = data_test_opt["batch_size"], \
+                num_workers = args.num_workers, 
+                shuffle = False)
 logger.info("dataloader OK!")
 
-network = AlexNet(config["net"])
+#加载网络
+network = TCN(config["net_opt"])
 if args.checkpoint > 0 :
     net_checkpoint_name = args.exp + "_net_epoch" + args.checkpoint
     net_checkpoint_path = os.path.join(exp_dir, net_checkpoint_name)
@@ -98,12 +87,14 @@ if args.checkpoint > 0 :
 
 network = network.cuda()
 
-optim_opt = config["optim"]
-if optim_opt["name"] == "SGD":
+optim_opt = config["optim_opt"]
+if optim_opt["name"] == "Adam":
+    optimizer = optim.Adam(network.parameters(), lr = optim_opt["lr"])
+elif optim_opt['name'] == 'SGD':
     optimizer = optim.SGD(network.parameters(), lr = optim_opt["lr"], \
-                    momentum = optim_opt["momentum"], \
-                    nesterov = optim_opt["nesterov"] if ('nesterov' in optim_opt) else False,\
-                    weight_decay=optim_opt['weight_decay'])
+                momentum = optim_opt["momentum"], \
+                nesterov = optim_opt["nesterov"] if ('nesterov' in optim_opt) else False,\
+                weight_decay=optim_opt['weight_decay'])
 else:
     raise ValueError("Don't surport optimizer:{}".format(optim_opt["name"]))
 
@@ -118,8 +109,8 @@ if args.checkpoint > 0 :
     except:
         logger.info("Can not load checkpoint from {}".format(optim_checkpoint_path))
 
-lr_protocol = optim_opt["lr_protocol"]
 
+lr_protocol = optim_opt["lr_protocol"]
 loss = nn.CrossEntropyLoss()
 
 def accuracy(output, target, topk=(1,)):
@@ -142,6 +133,7 @@ train_acc = AverageMeter()
 test_model_loss = AverageMeter()
 test_acc = AverageMeter()
 
+
 def train(epoch): 
     train_model_loss.reset()
     train_acc.reset()
@@ -152,7 +144,7 @@ def train(epoch):
         param_group['lr'] = lr     
     logger.info("Setting learning rate to: {}".format(lr))
     
-    for idx, batch in enumerate(tqdm(dloader_train(epoch))):
+    for idx, batch in enumerate(tqdm(trainloader(epoch))):
         #start = time.time()
         #加载数据
         data = batch[0].cuda()
@@ -172,8 +164,8 @@ def train(epoch):
         #评价
         train_model_loss.update(loss_total.item())
         train_acc.update(accuracy(output, target, topk = (1,))[0][0])     
-        if (idx+1) % config["display_step"] ==0:            
-            logger.info("==> Iteration [{}][{}/{}]:".format(epoch+1, idx+1, len(dloader_train)))
+        if (idx+1) % config["display_step"] == 0:            
+            logger.info("==> Iteration [{}][{}/{}]:".format(epoch+1, idx+1, len(trainloader)))
             logger.info("current loss:{}".format(loss_total.item()))
             #logger.info("grad norm:{}".format(total_grad_norm))
             logger.info("loss: {}  acc: {}".format(train_model_loss.avg, train_acc.avg))               
@@ -188,12 +180,11 @@ def train(epoch):
         "test_acc":test_acc.avg
         }, epoch+1)
 
-
 def test(epoch):
     test_model_loss.reset()
     test_acc.reset()
     network.eval()
-    for idx, batch in enumerate(tqdm(dloader_test(epoch))):
+    for idx, batch in enumerate(tqdm(testloader(epoch))):
         data = batch[0].cuda()
         target = batch[1].cuda()
         output = network(data)
@@ -204,7 +195,7 @@ def test(epoch):
         test_acc.update(accuracy(output, target, topk = (1,))[0][0])    
     logger.info("==> Evaluation Result: ")
     logger.info("loss: {}  acc:{}".format(test_model_loss.avg, test_acc.avg))
-    
+
 best_test_acc = 0
 best_epoch = None
 
@@ -254,15 +245,6 @@ for epoch in range(args.checkpoint, config['num_epochs']):
                            "network": network.state_dict()}
         torch.save(net_best_state, net_best_path)
         logger.info("Saving model best with acc:{}".format(best_test_acc))
-
-
-
-
-
-
-
-
-
 
 
 

@@ -5,9 +5,9 @@
 
 <div align=center><img src="https://github.com/zzz1515151/self-supervised_learning_sketch/blob/master/img/cat.gif" width = 30% height = 30% /></div>
 
-This repository is the official code of paper "Deep Self-Supervised Representation Learning for Free-Hand Sketch"
+This repository is the official code of paper ["Deep Self-Supervised Representation Learning for Free-Hand Sketch"](https://arxiv.org/pdf/2002.00867.pdf)
 
-<div align=center><img src="https://github.com/zzz1515151/self-supervised_learning_sketch/blob/master/img/pipeline.pdf"/></div>
+<div align=center><img src="https://github.com/zzz1515151/self-supervised_learning_sketch/blob/master/img/pipeline.png"/></div>
 
 ## Requirements
 Ubuntu 16.04
@@ -46,7 +46,7 @@ chmod +x download.sh
 ```
 
 ## Training Rotation CNN
-We follow ["UNSUPERVISED REPRESENTATION LEARNING BY PREDICTING IMAGE ROTATIONS"](https://arxiv.org/pdf/1803.07728.pdf) to build RotNet. 
+We follow ["Unsupervised Representation Learning by Predicting Image Rotations"](https://arxiv.org/pdf/1803.07728.pdf) to build RotNet. 
 ```
 # 1. Enter config folder.
 cd config 
@@ -117,4 +117,14 @@ python train_tcn.py
     --num_workers ${CUSTOMIZED_NUM_WORKERS} 
     --gpu ${CUSTOMIZED_GPU_ID}
 
+```
+## Citations
+If you find this code useful to your research, please cite our paper as the following bibtex:
+```
+@article{selfsupervisedsketch2020,
+  title={Deep Self-Supervised Representation Learning for Free-Hand Sketch},
+  author={Xu, Peng and Song, Zeyu and Yin, Qiyue and Song, Yi-Zhe and Wang, Liang},
+  journal={arXiv preprint arXiv:2002.00867},
+  year={2020}
+}
 ```

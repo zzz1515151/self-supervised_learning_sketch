@@ -1,3 +1,4 @@
+from __future__ import print_function
 import torch
 import torch.utils.data as data
 import torchvision
@@ -8,15 +9,16 @@ import numpy as np
 import random
 from torch.utils.data.dataloader import default_collate
 from quickdraw_transform import deform_xy
+from quickdraw_transform import erase
 from PIL import Image
 import os
+import errno
 import numpy as np
 import sys
 import csv
 
+from pdb import set_trace as breakpoint
 
-# Set the paths of the datasets here.
-# _sketch_dataset_root = "/home/songzeyu/quickdraw_224png_20190108"
 
 def _get_filenames_and_classes(dataset_dir):
     """Returns a list of filenames and inferred class names.
@@ -48,7 +50,7 @@ def _get_filenames_and_classes(dataset_dir):
 
 class SketchDataset(data.Dataset):
 
-    def __init__(self, split, resize, root):
+    def __init__(self, root, split, resize):
         '''
         args:
           dataset_name:数据集名称
@@ -70,7 +72,7 @@ class SketchDataset(data.Dataset):
         # 分割训练集及测试集，得到训练集测试集路径
         _NUM_VALIDATION = 345000
         _RANDOM_SEED = 0  
-        photo_filenames, _ = _get_filenames_and_classes(_sketch_dataset_root)
+        photo_filenames, _ = _get_filenames_and_classes(root)
         random.seed(_RANDOM_SEED)
         random.shuffle(photo_filenames)
         if self.split == "train":
@@ -109,12 +111,14 @@ class DataLoader(object):
     """
     def __init__(self,
                  dataset,
+                 signal_type,
                  batch_size=1,
                  unsupervised=True,
                  epoch_size=None,
                  num_workers=0,
                  shuffle=True):
         self.dataset = dataset
+        self.signal_type = signal_type
         self.shuffle = shuffle
         self.epoch_size = epoch_size if epoch_size is not None else len(dataset)
         self.batch_size = batch_size
@@ -133,22 +137,38 @@ class DataLoader(object):
         rand_seed = epoch * self.epoch_size
         random.seed(rand_seed)
         if self.unsupervised:
-            #无监督，四个方向旋转四分类
-            def _load_function(idx):                    
-                idx = idx % len(self.dataset)
-                img0 = self.dataset[idx]
-                transformed_imgs = [
-                #原图
-                self.transform(img0), 
-                #90
-                self.transform(rotate_img(img0, 90)),
-                #180            
-                self.transform(rotate_img(img0, 180)), 
-                #270 
-                self.transform(rotate_img(img0, 270)),                          
-                ]
-                transform_labels=torch.LongTensor([0,1,2,3]) #labels 
-                return torch.stack(transformed_imgs, dim=0), transform_labels
+            if self.signal_type == 'rotation':
+                #无监督，四个方向旋转四分类
+                def _load_function(idx):                    
+                    idx = idx % len(self.dataset)
+                    img0 = self.dataset[idx]
+                    transformed_imgs = [
+                    #原图
+                    self.transform(rotate_img(img0, 0)),                
+                    # 90
+                    self.transform(rotate_img(img0, 90)),      
+                    # 180
+                    self.transform(rotate_img(img0, 180)), 
+                    # 270 
+                    self.transform(rotate_img(img0, 270)), 
+                    ]
+                    transform_labels=torch.LongTensor([0,1,2,3]) #labels                
+                    return torch.stack(transformed_imgs, dim=0), transform_labels
+            elif self.signal_type == 'deformation':
+                def _load_function(idx):                    
+                    idx = idx % len(self.dataset)
+                    img0 = self.dataset[idx]
+                    transformed_imgs = [
+                    #原图
+                    self.transform(img0),                
+                    #水平扩展垂直压缩
+                    self.transform(deform_xy(img0, 2.1, 0, 1, -4.1, 0, 1)),       
+                    ]
+                    transform_labels=torch.LongTensor([0,1]) #labels                
+                    return torch.stack(transformed_imgs, dim=0), transform_labels
+            else:
+                raise ValueError('signal must be rotation or deformation')
+            
             def _collate_fun(batch):
                 batch = default_collate(batch)
                 assert(len(batch)==2)
