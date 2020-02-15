@@ -48,8 +48,8 @@ class RNNDataset(data.Dataset):
     def __init__(self, root, split):
         """
         args:
-            root:数据集路径
-            split:训练集/测试集
+            root:
+            split:
         return:
             a pytorch dataset instance 
         """
@@ -148,12 +148,12 @@ class DataLoader(object):
         rand_seed = epoch * self.epoch_size
         random.seed(rand_seed)      
         if self.signal_type == 'rotation':
-            #无监督，四个方向旋转四分类
+            
             def _load_function(idx):                    
                 idx = idx % len(self.dataset)
                 stroke = self.dataset[idx]
                 rotated_strokes = [
-                # 原图
+                
                 self.transform(rotate_rnn(stroke, 0, self.size)),
                 # 90
                 self.transform(rotate_rnn(stroke, 90, self.size)),
@@ -169,9 +169,9 @@ class DataLoader(object):
                 idx = idx % len(self.dataset)
                 stroke = self.dataset[idx]
                 rotated_strokes = [
-                #原图
+                
                 self.transform(rotate_rnn(stroke, 0, self.size)),
-                #水平扩展垂直压缩
+                
                 self.transform(transform_rnn(stroke, 2.1, 0, 1, -4.1, 0, 1))
                 ]
                 rotation_labels=torch.LongTensor([0,1]) #labels 

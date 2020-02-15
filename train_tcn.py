@@ -34,7 +34,7 @@ exp_visual_dir = os.path.join(exp_dir, "visual")
 if not os.path.exists(exp_visual_dir):
     os.makedirs(exp_visual_dir)
 
-#读取参数
+
 config = imp.load_source("", exp_config).config
 #tensorboard && logger
 now_str = datetime.datetime.now().__str__().replace(' ','_')
@@ -57,7 +57,7 @@ data_test_opt = config['data_test_opt']
 signal_type = config['signal_type']
 
 logger.info("initing dataloader")
-#加载数据
+
 train_dataset = RNNDataset(root = data_train_opt["root"], split = data_train_opt["split"])
 trainloader = DataLoader(dataset = train_dataset, 
                 signal_type = signal_type,
@@ -72,7 +72,7 @@ testloader = DataLoader(dataset = test_dataset,
                 shuffle = False)
 logger.info("dataloader OK!")
 
-#加载网络
+
 network = TCN(config["net_opt"])
 if args.checkpoint > 0 :
     net_checkpoint_name = args.exp + "_net_epoch" + args.checkpoint
@@ -146,22 +146,22 @@ def train(epoch):
     
     for idx, batch in enumerate(tqdm(trainloader(epoch))):
         #start = time.time()
-        #加载数据
+        
         data = batch[0].cuda()
         target = batch[1].cuda()
-        #zero_grad
+        
         optimizer.zero_grad()
-        #forward
+        
         output = network(data)
         #fc_output = network(data, ["fc_block"])
         #writer.add_histogram("train", fc_output.data, epoch * len(dloader_train) + idx)
-        #计算loss
+        
         loss_total = loss(output, target)
-        #backword
+        
         loss_total.backward()        
         
         optimizer.step()
-        #评价
+        
         train_model_loss.update(loss_total.item())
         train_acc.update(accuracy(output, target, topk = (1,))[0][0])     
         if (idx+1) % config["display_step"] == 0:            
