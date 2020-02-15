@@ -1,6 +1,4 @@
-<center> <h1> Deep Self-Supervised Representation Learning </h1> </center>
-
-<center> <h1> for Free-Hand Sketch </h1> </center>
+# Deep Self-Supervised Representation Learning for Free-Hand Sketch
 
 ![](https://img.shields.io/badge/language-Python-{green}.svg)
 ![](https://img.shields.io/npm/l/express.svg)
