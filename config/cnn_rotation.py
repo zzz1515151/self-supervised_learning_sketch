@@ -4,7 +4,7 @@ train_batch_size = 256
 test_batch_size = 256
 
 config = {}
-#训练集及测试集参数
+
 data_train_opt = {} 
 data_train_opt['root'] = _sketch_img_root
 data_train_opt['batch_size'] = train_batch_size

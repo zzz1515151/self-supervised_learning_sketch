@@ -3,9 +3,13 @@
 ![](https://img.shields.io/badge/language-Python-{green}.svg)
 ![](https://img.shields.io/npm/l/express.svg)
 
+<div align=center><img src="https://github.com/PengBoXiangShang/self-supervised_learning_sketch/blob/master/img/papertitle.png"/></div>
+
 <div align=center><img src="https://github.com/zzz1515151/self-supervised_learning_sketch/blob/master/img/cat.gif" width = 30% height = 30% /></div>
 
-This repository is the official code of paper ["Deep Self-Supervised Representation Learning for Free-Hand Sketch"](https://arxiv.org/pdf/2002.00867.pdf)
+This repository is the official code of paper ["Deep Self-Supervised Representation Learning for Free-Hand Sketch"](https://arxiv.org/pdf/2002.00867.pdf), 
+
+by [Peng Xu](http://www.pengxu.net/), [Zeyu Song](https://github.com/zzz1515151), [Qiyue Yin](https://scholar.google.com/citations?user=glvvuKUAAAAJ&hl=en), [Yi-Zhe Song](https://scholar.google.com/citations?user=irZFP_AAAAAJ&hl=en), and [Liang Wang](https://scholar.google.com/citations?user=8kzzUboAAAAJ&hl=en).
 
 <div align=center><img src="https://github.com/zzz1515151/self-supervised_learning_sketch/blob/master/img/pipeline.png"/></div>
 

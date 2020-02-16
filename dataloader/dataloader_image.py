@@ -21,16 +21,7 @@ from pdb import set_trace as breakpoint
 
 
 def _get_filenames_and_classes(dataset_dir):
-    """Returns a list of filenames and inferred class names.
-
-    Args:
-      dataset_dir: A directory containing a set of subdirectories representing
-        class names. Each subdirectory should contain PNG or JPG encoded images.
-
-    Returns:
-      A list of image file paths, relative to `dataset_dir` and the list of
-      subdirectories, representing class names.
-    """
+    
     quickdraw_root = dataset_dir
     directories = []
     class_names = []
@@ -51,13 +42,7 @@ def _get_filenames_and_classes(dataset_dir):
 class SketchDataset(data.Dataset):
 
     def __init__(self, root, split, resize):
-        '''
-        args:
-          dataset_name:数据集名称
-          split:train/test   
-        output:
-          a dataset instance     
-        '''
+        
         self.split = split.lower()             
         assert(self.split=='train' or self.split=='test')
         if resize:
@@ -69,7 +54,7 @@ class SketchDataset(data.Dataset):
             transforms_list = [
             lambda x: np.asarray(x),
             ]  
-        # 分割训练集及测试集，得到训练集测试集路径
+        
         _NUM_VALIDATION = 345000
         _RANDOM_SEED = 0  
         photo_filenames, _ = _get_filenames_and_classes(root)
@@ -138,12 +123,12 @@ class DataLoader(object):
         random.seed(rand_seed)
         if self.unsupervised:
             if self.signal_type == 'rotation':
-                #无监督，四个方向旋转四分类
+                
                 def _load_function(idx):                    
                     idx = idx % len(self.dataset)
                     img0 = self.dataset[idx]
                     transformed_imgs = [
-                    #原图
+                    
                     self.transform(rotate_img(img0, 0)),                
                     # 90
                     self.transform(rotate_img(img0, 90)),      
@@ -159,9 +144,9 @@ class DataLoader(object):
                     idx = idx % len(self.dataset)
                     img0 = self.dataset[idx]
                     transformed_imgs = [
-                    #原图
+                    
                     self.transform(img0),                
-                    #水平扩展垂直压缩
+                    
                     self.transform(deform_xy(img0, 2.1, 0, 1, -4.1, 0, 1)),       
                     ]
                     transform_labels=torch.LongTensor([0,1]) #labels                
@@ -177,7 +162,7 @@ class DataLoader(object):
                 batch[1] = batch[1].view([batch_size*transform_num])
                 return batch
         else: 
-            #监督
+            
             def _load_function(idx):
                 idx = idx % len(self.dataset)
                 img, categorical_label = self.dataset[idx]

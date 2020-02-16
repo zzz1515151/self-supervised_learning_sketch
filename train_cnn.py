@@ -36,7 +36,7 @@ exp_visual_dir = os.path.join(exp_dir, "visual")
 if not os.path.exists(exp_visual_dir):
     os.makedirs(exp_visual_dir)
 
-#读取参数
+
 config = imp.load_source("", exp_config).config
 #tensorboard && logger
 now_str = datetime.datetime.now().__str__().replace(' ','_')
@@ -154,22 +154,22 @@ def train(epoch):
     
     for idx, batch in enumerate(tqdm(dloader_train(epoch))):
         #start = time.time()
-        #加载数据
+        
         data = batch[0].cuda()
         target = batch[1].cuda()
-        #zero_grad
+        
         optimizer.zero_grad()
-        #forward
+        
         output = network(data)
         #fc_output = network(data, ["fc_block"])
         #writer.add_histogram("train", fc_output.data, epoch * len(dloader_train) + idx)
-        #计算loss
+        
         loss_total = loss(output, target)
-        #backword
+        
         loss_total.backward()        
         
         optimizer.step()
-        #评价
+        
         train_model_loss.update(loss_total.item())
         train_acc.update(accuracy(output, target, topk = (1,))[0][0])     
         if (idx+1) % config["display_step"] ==0:            
