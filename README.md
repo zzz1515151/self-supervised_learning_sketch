@@ -47,6 +47,9 @@ conda activate ${CUSTOMIZED_ENVIRONMENT_NAME}
 # 4. Download our image and stroke pretraining datasets
 chmod +x download.sh
 ./download.sh
+# If this script fails to work well for you,
+# please feel free to email both peng.xu[at]ntu.edu.sg and szy2014[at]bupt.edu.cn .
+# Please tell us your name and organization in the email.
 ```
 
 ## Training Rotation CNN
